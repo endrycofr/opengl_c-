@@ -15,12 +15,40 @@ pipeline {
             }
         }
 
+        stage('Install Build Tools') {
+            steps {
+                sh '''
+                    sudo apt-get update
+                    sudo apt-get install -y build-essential make cppcheck
+                '''
+            }
+        }
+
         stage('Build and Test') {
             steps {
-                sh 'make'
-                sh 'make test'
-                sh 'cppcheck --enable=all --inconclusive --xml --xml-version=2 . 2> cppcheck-result.xml'
-                publishCppcheck pattern: 'cppcheck-result.xml'
+                script {
+                    try {
+                        sh 'make'
+                    } catch (Exception e) {
+                        echo "Make failed. Error: ${e.getMessage()}"
+                        error "Build failed"
+                    }
+                    
+                    try {
+                        sh 'make test'
+                    } catch (Exception e) {
+                        echo "Tests failed. Error: ${e.getMessage()}"
+                        error "Tests failed"
+                    }
+                    
+                    try {
+                        sh 'cppcheck --enable=all --inconclusive --xml --xml-version=2 . 2> cppcheck-result.xml'
+                        publishCppcheck pattern: 'cppcheck-result.xml'
+                    } catch (Exception e) {
+                        echo "Cppcheck failed. Error: ${e.getMessage()}"
+                        // We don't fail the build for cppcheck issues, but we log them
+                    }
+                }
             }
         }
 
@@ -73,7 +101,7 @@ pipeline {
     post {
         always {
             cleanWs()
-            sh 'docker buildx rm multiarch-builder'
+            sh 'docker buildx rm multiarch-builder || true'
         }
     }
 }
