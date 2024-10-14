@@ -26,22 +26,6 @@ pipeline {
             }
         }
 
-        stage('Setup Docker Buildx') {
-            steps {
-                script {
-                    try {
-                        sh '''
-                            docker version
-                            docker buildx version
-                            docker buildx create --name mybuilder --use || true
-                            docker buildx inspect mybuilder --bootstrap
-                        '''
-                    } catch (Exception e) {
-                        error "Failed to setup Docker Buildx: ${e.getMessage()}\nMake sure Docker and Docker Buildx are properly installed and configured."
-                    }
-                }
-            }
-        }
 
         stage('Test') {
             steps {
@@ -68,6 +52,10 @@ pipeline {
                     withDockerRegistry(credentialsId: 'b4ac2fbd-6690-4234-a6de-cdeba8ccb7b8', toolName: 'Docker') {
                         try {
                             sh """
+                            docker version
+                            docker buildx version
+                            docker buildx create --name mybuilder --use || true
+                            docker buildx inspect mybuilder --bootstrap
                                 docker buildx build --push \
                                     --platform linux/amd64,linux/arm64 \
                                     -t ${DOCKER_IMAGE}:${DOCKER_TAG} \
