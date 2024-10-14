@@ -8,18 +8,6 @@ pipeline {
         RASPI_HOST = 'raspberrypi.local'
     }
 
-    stages {
-        stage('Check Docker Installation') {
-            steps {
-                script {
-                    def dockerInstalled = sh(script: 'which docker', returnStatus: true) == 0
-                    if (!dockerInstalled) {
-                        error "Docker is not installed or not in PATH. Please install Docker on the Jenkins agent."
-                    }
-                }
-            }
-        }
-
         stage('Git Checkout') {
             steps {
                 git branch: 'master', credentialsId: 'jenkins-git', url: 'https://github.com/endrycofr/opengl_c-.git'
