@@ -15,12 +15,17 @@ pipeline {
             }
         }
 
-        stage('Install Build Tools') {
+        stage('Check Build Tools') {
             steps {
-                sh '''
-                    sudo apt-get update
-                    sudo apt-get install -y build-essential make cppcheck
-                '''
+                script {
+                    def tools = ['make', 'g++', 'cppcheck']
+                    tools.each { tool ->
+                        def installed = sh(script: "which ${tool}", returnStatus: true) == 0
+                        if (!installed) {
+                            error "Required tool '${tool}' is not installed. Please install it on the Jenkins agent."
+                        }
+                    }
+                }
             }
         }
 
@@ -55,7 +60,7 @@ pipeline {
         stage('Setup Docker Buildx') {
             steps {
                 sh '''
-                    docker buildx create --use --name multiarch-builder
+                    docker buildx create --use --name multiarch-builder || true
                     docker buildx inspect --bootstrap
                 '''
             }
