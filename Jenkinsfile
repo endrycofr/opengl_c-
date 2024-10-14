@@ -8,12 +8,12 @@ pipeline {
         RASPI_HOST = 'raspberrypi.local'
     }
 
+    stages {
         stage('Git Checkout') {
             steps {
                 git credentialsId: 'jenkins-git', url: 'https://github.com/endrycofr/opengl_c-.git'
             }
         }
-
 
         stage('Test') {
             steps {
@@ -44,10 +44,10 @@ pipeline {
                             docker buildx version
                             docker buildx create --name mybuilder --use || true
                             docker buildx inspect mybuilder --bootstrap
-                                docker buildx build --push \
-                                    --platform linux/amd64,linux/arm64 \
-                                    -t ${DOCKER_IMAGE}:${DOCKER_TAG} \
-                                    -t ${DOCKER_IMAGE}:latest .
+                            docker buildx build --push \
+                                --platform linux/amd64,linux/arm64 \
+                                -t ${DOCKER_IMAGE}:${DOCKER_TAG} \
+                                -t ${DOCKER_IMAGE}:latest .
                             """
                         } catch (Exception e) {
                             error "Failed to build or push Docker image: ${e.getMessage()}"
@@ -69,10 +69,10 @@ pipeline {
                                     docker pull ${DOCKER_IMAGE}:${DOCKER_TAG}
                                     docker stop opengl-app || true
                                     docker rm opengl-app || true
-                                    docker run -d --name opengl-app \\
-                                        -e DISPLAY=:0 \\
-                                        --device /dev/dri \\
-                                        -v /tmp/.X11-unix:/tmp/.X11-unix \\
+                                    docker run -d --name opengl-app \
+                                        -e DISPLAY=:0 \
+                                        --device /dev/dri \
+                                        -v /tmp/.X11-unix:/tmp/.X11-unix \
                                         ${DOCKER_IMAGE}:${DOCKER_TAG}
                                 '
                             """
