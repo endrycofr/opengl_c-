@@ -10,7 +10,7 @@ pipeline {
 
         stage('Git Checkout') {
             steps {
-                git branch: 'master', credentialsId: 'jenkins-git', url: 'https://github.com/endrycofr/opengl_c-.git'
+                git credentialsId: 'jenkins-git', url: 'https://github.com/endrycofr/opengl_c-.git'
             }
         }
 
