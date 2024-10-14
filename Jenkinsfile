@@ -26,7 +26,7 @@ pipeline {
                         conan install . --build=missing
                         mkdir build
                         cd build
-                        cmake ..
+                        make ..
                     '''
                 }
             }
