@@ -1,6 +1,9 @@
 pipeline {
     agent any
  
+    tools {
+    conan 'conan'
+    }
 
     environment {
         DOCKER_CREDENTIALS = '835d1510-5e15-4dbb-b585-9185fdda5149'
