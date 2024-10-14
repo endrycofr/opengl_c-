@@ -1,7 +1,12 @@
 pipeline {
     agent any
+    tools {
+        c++ 'c++'
+    }
 
     environment {
+        DOCKER_CREDENTIALS = '835d1510-5e15-4dbb-b585-9185fdda5149'
+        DOCKER_REGISTRY = 'https://hub.docker.com/repository/docker/endrycofr'
         DOCKER_IMAGE = 'endrycofr/cpp_opengl'
         DOCKER_TAG = "${BUILD_NUMBER}"
         RASPI_USER = 'pi'
@@ -11,17 +16,27 @@ pipeline {
     stages {
         stage('Git Checkout') {
             steps {
-                git credentialsId: 'jenkins-git', url: 'https://github.com/endrycofr/opengl_c-.git'
+                git branch: 'master', credentialsId: '0ddd4d71-03a1-42a9-ae6e-d48f6d93d3d2', url: 'https://github.com/endrycofr/opengl_c-'
             }
         }
-        
+
+        stage('Install C++ Dependencies') {
+            steps {
+                sh 'make'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'make test'
+            }
+        }
 
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'Dockerhub', toolName: 'Docker') {
-                        try {
-                            sh """
+                    try {
+                        sh """
                             docker info
                             docker version
                             docker buildx version
@@ -31,10 +46,9 @@ pipeline {
                                 --platform linux/amd64,linux/arm64 \
                                 -t ${DOCKER_IMAGE}:${DOCKER_TAG} \
                                 -t ${DOCKER_IMAGE}:latest .
-                            """
-                        } catch (Exception e) {
-                            error "Failed to build or push Docker image: ${e.getMessage()}"
-                        }
+                        """
+                    } catch (Exception e) {
+                        error "Failed to build or push Docker image: ${e.getMessage()}"
                     }
                 }
             }
