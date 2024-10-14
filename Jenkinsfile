@@ -18,19 +18,24 @@ pipeline {
             }
         }
 
-        stage('Install C++ Dependencies with Conan') {
-            steps {
-                script {
-                    // Install dependencies using Conan
-                    sh '''
-                        conan install . --build=missing
-                        mkdir build
-                        cd build
-                        make ..
-                    '''
-                }
-            }
+stage('Install C++ Dependencies with Conan') {
+    steps {
+        script {
+            // Install Conan if it's not already installed
+            sh '''
+                if ! command -v conan &> /dev/null; then
+                    pip install conan --user
+                    export PATH=$PATH:$HOME/.local/bin
+                fi
+                conan install . --build=missing
+                mkdir build
+                cd build
+                make ..
+            '''
         }
+    }
+}
+
 
         stage('Build with Make') {
             steps {
