@@ -6,10 +6,6 @@ pipeline {
         DOCKER_TAG = "${BUILD_NUMBER}"
         RASPI_USER = 'pi'
         RASPI_HOST = 'raspberrypi.local'
-            ...
-         CC = 'gcc'
-         MAKE = 'make'
-        ...
     }
 
     stages {
