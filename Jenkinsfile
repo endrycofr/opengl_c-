@@ -1,7 +1,9 @@
 pipeline {
     agent any
     tools {
+        // Define C++ and Conan tools
         c++ 'c++'
+        conan 'conan'  // Ensure that Conan is installed on Jenkins
     }
 
     environment {
@@ -20,15 +22,29 @@ pipeline {
             }
         }
 
-        stage('Install C++ Dependencies') {
+        stage('Install C++ Dependencies with Conan') {
             steps {
-                sh 'make'
+                script {
+                    // Install dependencies using Conan
+                    sh '''
+                        conan install . --build=missing
+                        mkdir build
+                        cd build
+                        cmake ..
+                    '''
+                }
+            }
+        }
+
+        stage('Build with Make') {
+            steps {
+                sh 'make -C build'
             }
         }
 
         stage('Test') {
             steps {
-                sh 'make test'
+                sh 'make -C build test'
             }
         }
 
