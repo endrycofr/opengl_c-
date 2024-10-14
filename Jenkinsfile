@@ -19,7 +19,7 @@ pipeline {
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'b4ac2fbd-6690-4234-a6de-cdeba8ccb7b8', toolName: 'Docker') {
+                    withDockerRegistry(credentialsId: 'Dockerhub', toolName: 'Docker') {
                         try {
                             sh """
                             docker version
