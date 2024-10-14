@@ -14,14 +14,7 @@ pipeline {
                 git credentialsId: 'jenkins-git', url: 'https://github.com/endrycofr/opengl_c-.git'
             }
         }
-        stage('Install and Configure Docker') {
-    steps {
-        sh 'sudo apt-get update && sudo apt-get install -y docker.io'
-        sh 'sudo systemctl start docker'
-        sh 'sudo usermod -aG docker jenkins'
-    }
-}
-
+        
 
         stage('Build and Push Docker Image') {
             steps {
@@ -29,6 +22,7 @@ pipeline {
                     withDockerRegistry(credentialsId: 'Dockerhub', toolName: 'Docker') {
                         try {
                             sh """
+                            docker info
                             docker version
                             docker buildx version
                             docker buildx create --name mybuilder --use || true
