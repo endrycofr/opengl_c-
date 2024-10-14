@@ -19,24 +19,6 @@ pipeline {
             }
         }
 
-        // stage('Test') {
-        //     steps {
-        //         script {
-        //             try {
-        //                 sh 'make test || echo "make test failed but continuing"'
-        //             } catch (Exception e) {
-        //                 echo "Warning: make test failed. Error: ${e.getMessage()}"
-        //             }
-
-        //             try {
-        //                 sh 'cppcheck --enable=all --inconclusive --xml --xml-version=2 . 2> cppcheck-result.xml || echo "cppcheck failed but continuing"'
-        //                 publishCppcheck pattern: 'cppcheck-result.xml'
-        //             } catch (Exception e) {
-        //                 echo "Warning: cppcheck failed. Error: ${e.getMessage()}"
-        //             }
-        //         }
-        //     }
-        // }
 
         stage('Build and Push Docker Image') {
             steps {
