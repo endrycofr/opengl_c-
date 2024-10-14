@@ -1,10 +1,6 @@
 pipeline {
     agent any
-    tools {
-        // Define C++ and Conan tools
-        c++ 'c++'
-        conan 'conan'  // Ensure that Conan is installed on Jenkins
-    }
+ 
 
     environment {
         DOCKER_CREDENTIALS = '835d1510-5e15-4dbb-b585-9185fdda5149'
