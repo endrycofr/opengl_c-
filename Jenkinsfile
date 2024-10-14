@@ -20,8 +20,11 @@ pipeline {
                 script {
                     try {
                         sh '''
-                            docker buildx create --use --name multiarch-builder || true
-                            docker buildx inspect --bootstrap
+                              # Create and use a new builder instance
+                            docker buildx create --name mybuilder --use || true
+                            docker buildx inspect mybuilder --bootstrap
+                            
+
                         '''
                     } catch (Exception e) {
                         error "Failed to setup Docker Buildx: ${e.getMessage()}"
