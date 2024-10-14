@@ -9,6 +9,17 @@ pipeline {
     }
 
     stages {
+        stage('Check Docker Installation') {
+            steps {
+                script {
+                    def dockerInstalled = sh(script: 'which docker', returnStatus: true) == 0
+                    if (!dockerInstalled) {
+                        error "Docker is not installed or not in PATH. Please install Docker on the Jenkins agent."
+                    }
+                }
+            }
+        }
+
         stage('Git Checkout') {
             steps {
                 git branch: 'master', credentialsId: 'jenkins-git', url: 'https://github.com/endrycofr/opengl_c-.git'
@@ -20,14 +31,13 @@ pipeline {
                 script {
                     try {
                         sh '''
-                              # Create and use a new builder instance
+                            docker version
+                            docker buildx version
                             docker buildx create --name mybuilder --use || true
                             docker buildx inspect mybuilder --bootstrap
-                            
-
                         '''
                     } catch (Exception e) {
-                        error "Failed to setup Docker Buildx: ${e.getMessage()}"
+                        error "Failed to setup Docker Buildx: ${e.getMessage()}\nMake sure Docker and Docker Buildx are properly installed and configured."
                     }
                 }
             }
@@ -102,7 +112,7 @@ pipeline {
     post {
         always {
             cleanWs()
-            sh 'docker buildx rm multiarch-builder || true'
+            sh 'docker buildx rm mybuilder || true'
         }
         success {
             echo 'Pipeline succeeded!'
