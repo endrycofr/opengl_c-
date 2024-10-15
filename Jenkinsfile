@@ -1,8 +1,9 @@
 pipeline {
-    agent any
- 
-    tools {
-    conan 'conan'
+    agent {
+        docker {
+            image 'python:3.8-slim'  // Use a Python image with pip pre-installed
+            args '-u root'           // Run as root to allow pip install
+        }
     }
 
     environment {
@@ -21,24 +22,22 @@ pipeline {
             }
         }
 
-stage('Install C++ Dependencies with Conan') {
-    steps {
-        script {
-            // Install Conan if it's not already installed
-            sh '''
-                if ! command -v conan &> /dev/null; then
-                    pip install conan --user
-                    export PATH=$PATH:$HOME/.local/bin
-                fi
-                conan install . --build=missing
-                mkdir build
-                cd build
-                make ..
-            '''
+        stage('Install C++ Dependencies with Conan') {
+            steps {
+                script {
+                    sh '''
+                        if ! command -v conan &> /dev/null; then
+                            pip install conan --user
+                            export PATH=$PATH:$HOME/.local/bin
+                        fi
+                        conan install . --build=missing
+                        mkdir -p build
+                        cd build
+                        make ..
+                    '''
+                }
+            }
         }
-    }
-}
-
 
         stage('Build with Make') {
             steps {
