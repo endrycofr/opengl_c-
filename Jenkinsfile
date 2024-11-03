@@ -1,11 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.8-slim'  // Use a Python image with pip pre-installed
-            args '-u root'           // Run as root to allow pip install
-        }
-    }
-
+    agent any
     environment {
         DOCKER_CREDENTIALS = '835d1510-5e15-4dbb-b585-9185fdda5149'
         DOCKER_REGISTRY = 'https://hub.docker.com/repository/docker/endrycofr'

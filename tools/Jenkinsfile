@@ -1,0 +1,35 @@
+pipeline {
+    agent any
+    stages {
+        stage('System Update & Upgrade') {
+            steps {
+                sh '''
+                    sudo apt update
+                    sudo apt -y upgrade
+                '''
+            }
+        }
+        stage('Install Build Essentials & cpp version') {
+            steps {
+                sh '''
+                    sudo apt -y install build-essential
+                    gcc --version
+                    g++ --version
+                '''
+            }
+        }
+        stage('Check Docker Version') {
+            steps {
+                sh 'docker -v'
+            }
+        }
+        stage('Install Make & Tools') {
+            steps {
+                sh '''
+                    sudo apt -y install make
+                    sudo apt -y install make-guile
+                '''
+            }
+        }
+    }
+}

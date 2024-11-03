@@ -1,4 +1,9 @@
 
+# Used by `image`, `push` & `deploy` targets, override as required
+IMAGE_REG ?= docker.io
+IMAGE_REPO ?= endrycofr/cpp_opengl
+IMAGE_TAG ?= latest
+
 # Compiler
 CXX = g++
 
@@ -30,3 +35,11 @@ $(TARGET): $(SRCS)
 # Clean target to remove compiled files
 clean:
 	rm -f $(TARGET)
+
+
+image:  ## 🔨 Build container image from Dockerfile 
+	docker build . --file build/Dockerfile \
+	--tag $(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG)
+
+push:  ## 📤 Push container image to registry 
+	docker push $(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG)
