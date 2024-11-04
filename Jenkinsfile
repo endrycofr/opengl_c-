@@ -15,57 +15,22 @@ pipeline {
                 git branch: 'master', credentialsId: '0ddd4d71-03a1-42a9-ae6e-d48f6d93d3d2', url: 'https://github.com/endrycofr/opengl_c-'
             }
         }
-
-        stage('Install C++ Dependencies with Conan') {
+          stage('Test') {
             steps {
-                script {
-                    sh '''
-                        if ! command -v conan &> /dev/null; then
-                            pip install conan --user
-                            export PATH=$PATH:$HOME/.local/bin
-                        fi
-                        conan install . --build=missing
-                        mkdir -p build
-                        cd build
-                        make ..
-                    '''
-                }
+                sh 'make test'
             }
         }
 
-        stage('Build with Make') {
+        stage('Docker build') {
             steps {
-                sh 'make -C build'
+                sh 'make image'
             }
-        }
-
-        stage('Test') {
-            steps {
-                sh 'make -C build test'
+       }
+         stage('Docker push') {
+            scripts {
+                sh 'make push'
             }
-        }
-
-        stage('Build and Push Docker Image') {
-            steps {
-                script {
-                    try {
-                        sh """
-                            docker info
-                            docker version
-                            docker buildx version
-                            docker buildx create --name mybuilder --use || true
-                            docker buildx inspect mybuilder --bootstrap
-                            docker buildx build --push \
-                                --platform linux/amd64,linux/arm64 \
-                                -t ${DOCKER_IMAGE}:${DOCKER_TAG} \
-                                -t ${DOCKER_IMAGE}:latest .
-                        """
-                    } catch (Exception e) {
-                        error "Failed to build or push Docker image: ${e.getMessage()}"
-                    }
-                }
-            }
-        }
+       }
 
         stage('Deploy to Raspberry Pi') {
             steps {

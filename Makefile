@@ -1,4 +1,3 @@
-
 # Used by `image`, `push` & `deploy` targets, override as required
 IMAGE_REG ?= docker.io
 IMAGE_REPO ?= endrycofr/cpp_opengl
@@ -21,25 +20,38 @@ endif
 
 # Source files
 SRCS = main.cpp
+TEST_SRCS = test_opengl.cpp
 
-# Output binary
-TARGET = main.exe # Use .exe extension for Windows
+# Output binaries
+TARGET = main.exe
+TEST_TARGET = opengl_test.exe
 
-# Default target
-all: $(TARGET)
+# Phony targets
+.PHONY: all clean image push
 
-# Rule to build the target
+# Default target to build both main and test applications
+all: $(TARGET) $(TEST_TARGET)
+
+# Build the main application
 $(TARGET): $(SRCS)
-	$(CXX) -o $@ $^ $(CXXFLAGS)
+	$(CXX) -o $(TARGET) $(SRCS) $(CXXFLAGS) || { echo 'Build failed for $(TARGET)'; exit 1; }
+
+# Build the test application
+$(TEST_TARGET): $(TEST_SRCS)
+	$(CXX) -o $(TEST_TARGET) $(TEST_SRCS) $(CXXFLAGS) || { echo 'Build failed for $(TEST_TARGET)'; exit 1; }
 
 # Clean target to remove compiled files
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) $(TEST_TARGET)
 
-
+# Image target to build container image from Dockerfile
 image:  ## 🔨 Build container image from Dockerfile 
-	docker build . --file build/Dockerfile \
-	--tag $(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG)
+	docker build . --file build/Dockerfile --tag $(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG) || { echo 'Docker build failed'; exit 1; }
 
+# Push target to push container image to registry 
 push:  ## 📤 Push container image to registry 
-	docker push $(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG)
+	docker push $(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG) || { echo 'Docker push failed'; exit 1; }
+
+
+test:
+	./$(TEST_TARGET) || { echo 'Test execution failed'; exit 1; }
