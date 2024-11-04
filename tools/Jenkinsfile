@@ -1,33 +1,87 @@
 pipeline {
     agent any
     stages {
-        stage('System Update & Upgrade') {
+        stage('Environment Setup') {
             steps {
                 sh '''
-                    sudo apt update
-                    sudo apt -y upgrade
+                    # Update package list with timeout and quiet mode
+                    timeout 10m sudo apt-get update -qq || true
+                    
+                    # Install essential build tools
+                    sudo apt-get install -y --no-install-recommends \
+                        build-essential \
+                        cmake \
+                        git \
+                        pkg-config
                 '''
             }
         }
-        stage('Install Build Essentials & cpp version') {
+        
+        stage('Install OpenGL Dependencies') {
             steps {
                 sh '''
-                    sudo apt -y install build-essential
+                    # Install OpenGL and related dependencies
+                    sudo apt-get install -y --no-install-recommends \
+                        libgl1-mesa-dev \
+                        libglu1-mesa-dev \
+                        freeglut3-dev \
+                        libglew-dev \
+                        libglfw3-dev \
+                        libglm-dev \
+                        libxrandr-dev \
+                        libxinerama-dev \
+                        libxcursor-dev \
+                        libxi-dev
+                '''
+            }
+        }
+        
+        stage('Clean Environment') {
+            steps {
+                sh '''
+                    # Clean apt cache and lists
+                    sudo rm -rf /var/lib/apt/lists/*
+                    sudo rm -f /var/cache/apt/archives/lock
+                    sudo rm -f /var/lib/dpkg/lock*
+                '''
+            }
+        }
+        
+    stage('Install Additional Tools') {
+    steps {
+        sh '''
+            # Enable the universe repository if it's not enabled
+            sudo add-apt-repository universe -y
+            
+            # Update package lists again
+            sudo apt-get update -qq
+            
+            # Install development tools
+            sudo apt-get install -y --no-install-recommends \
+                make \
+                gdb \
+                valgrind \
+                doxygen \
+                graphviz
+            
+            # Verify Docker installation
+            docker -v || echo "Docker not installed"
+            
+            # Clean up
+            sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/*
+        '''
+    }
+}
+
+        
+        stage('Verify Installations') {
+            steps {
+                sh '''
+                    # Check installed versions
                     gcc --version
                     g++ --version
-                '''
-            }
-        }
-        stage('Check Docker Version') {
-            steps {
-                sh 'docker -v'
-            }
-        }
-        stage('Install Make & Tools') {
-            steps {
-                sh '''
-                    sudo apt -y install make
-                    sudo apt -y install make-guile
+                    make --version
+                    cmake --version
                 '''
             }
         }
