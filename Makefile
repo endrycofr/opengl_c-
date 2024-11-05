@@ -26,8 +26,11 @@ TEST_SRCS = test_opengl.cpp
 TARGET = main.exe
 TEST_TARGET = opengl_test.exe
 
+# Explicitly define supported platforms
+PLATFORMS = linux/amd64,linux/arm64
+
 # Phony targets
-.PHONY: all clean image push
+.PHONY: all clean image push buildx-image buildx-push buildx-setup
 
 # Default target to build both main and test applications
 all: $(TARGET) $(TEST_TARGET)
@@ -44,14 +47,37 @@ $(TEST_TARGET): $(TEST_SRCS)
 clean:
 	rm -f $(TARGET) $(TEST_TARGET)
 
-# Image target to build container image from Dockerfile
-image:  ## 🔨 Build container image from Dockerfile 
-	docker build . --file build/Dockerfile --tag $(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG) || { echo 'Docker build failed'; exit 1; }
+# Setup buildx builder with multi-platform support
+buildx-setup:
+	@echo "🔧 Setting up Docker Buildx builder..."
+	docker buildx create --name multiarch-builder --driver docker-container --bootstrap || true
+	docker buildx use multiarch-builder
+	docker buildx inspect --bootstrap
 
-# Push target to push container image to registry 
-push:  ## 📤 Push container image to registry 
-	docker push $(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG) || { echo 'Docker push failed'; exit 1; }
+# Multi-platform build and push using buildx
+buildx-push: buildx-setup
+	@echo "🚀 Building and pushing multi-arch images for platforms: $(PLATFORMS)"
+	docker buildx build \
+		--platform $(PLATFORMS) \
+		-t $(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG) \
+		--push \
+		. || { echo '❌ Buildx build and push failed'; exit 1; }
+	@echo "✅ Successfully built and pushed images for AMD64 and ARM64"
 
+# Build multi-arch images locally without pushing
+buildx-image: buildx-setup
+	@echo "🔨 Building multi-arch images locally for platforms: $(PLATFORMS)"
+	docker buildx build \
+		--platform $(PLATFORMS) \
+		-t $(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG) \
+		--load \
+		. || { echo '❌ Buildx build failed'; exit 1; }
+	@echo "✅ Successfully built images for AMD64 and ARM64"
+
+# Show platform build status
+buildx-inspect:
+	@echo "📊 Inspecting buildx builder status..."
+	docker buildx inspect
 
 test:
 	./$(TEST_TARGET) || { echo 'Test execution failed'; exit 1; }

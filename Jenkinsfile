@@ -1,19 +1,14 @@
 pipeline {
     agent any
-    environment {
-        DOCKER_CREDENTIALS = '835d1510-5e15-4dbb-b585-9185fdda5149'
-        DOCKER_REGISTRY = 'https://hub.docker.com/repository/docker/endrycofr'
-        DOCKER_IMAGE = 'endrycofr/cpp_opengl'
-        DOCKER_TAG = "${BUILD_NUMBER}"
-        RASPI_USER = 'pi'
-        RASPI_HOST = 'raspberrypi.local'
-    }
+    // environment {
+    //     RASPI_USER = 'pi'
+    //     RASPI_HOST = 'raspberrypi.local'
+    // }
 
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: 'master', credentialsId: '0ddd4d71-03a1-42a9-ae6e-d48f6d93d3d2', url: 'https://github.com/endrycofr/opengl_c-'
-            }
+                git changelog: false, poll: false, url: 'https://github.com/endrycofr/opengl_c-.git'            }
         }
           stage('Test') {
             steps {
