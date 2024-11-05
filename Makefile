@@ -12,10 +12,13 @@ UNAME_S := $(shell uname -s)
 # Compiler flags for different operating systems
 ifeq ($(UNAME_S),Linux)
     CXXFLAGS = -I/usr/include -L/usr/lib -lGL -lGLU -lglut -lGLEW
+    TEST_EXEC = ./opengl_test
 else ifeq ($(UNAME_S),Darwin) # macOS is treated like Unix
     CXXFLAGS = -I/usr/local/include -lGL -lGLU -lglut -lGLEW
+    TEST_EXEC = ./opengl_test
 else # Windows
     CXXFLAGS = -I/mingw64/include -L/mingw64/lib -lopengl32 -lfreeglut -lglu32 -lglew32 -lglfw3 -lgdi32 -lwinmm
+    TEST_EXEC = opengl_test.exe
 endif
 
 # Source files
@@ -23,14 +26,14 @@ SRCS = main.cpp
 TEST_SRCS = test_opengl.cpp
 
 # Output binaries
-TARGET = main.exe
-TEST_TARGET = opengl_test.exe
+TARGET = main
+TEST_TARGET = opengl_test
 
 # Explicitly define supported platforms
 PLATFORMS = linux/amd64,linux/arm64
 
 # Phony targets
-.PHONY: all clean image push buildx-image buildx-push buildx-setup
+.PHONY: all clean image push buildx-image buildx-push buildx-setup test
 
 # Default target to build both main and test applications
 all: $(TARGET) $(TEST_TARGET)
@@ -42,6 +45,7 @@ $(TARGET): $(SRCS)
 # Build the test application
 $(TEST_TARGET): $(TEST_SRCS)
 	$(CXX) -o $(TEST_TARGET) $(TEST_SRCS) $(CXXFLAGS) || { echo 'Build failed for $(TEST_TARGET)'; exit 1; }
+	chmod +x $(TEST_TARGET)
 
 # Clean target to remove compiled files
 clean:
@@ -74,12 +78,7 @@ buildx-image: buildx-setup
 		. || { echo '❌ Buildx build failed'; exit 1; }
 	@echo "✅ Successfully built images for AMD64 and ARM64"
 
-# Show platform build status
-buildx-inspect:
-	@echo "📊 Inspecting buildx builder status..."
-	docker buildx inspect
-
-test:
+test: $(TEST_TARGET)
 	@echo "Running tests..."
 	chmod +x $(TEST_TARGET)
 	./$(TEST_TARGET) || { echo 'Test execution failed'; exit 1; }
