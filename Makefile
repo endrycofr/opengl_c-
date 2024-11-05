@@ -80,4 +80,6 @@ buildx-inspect:
 	docker buildx inspect
 
 test:
+	@echo "Running tests..."
+	chmod +x $(TEST_TARGET)
 	./$(TEST_TARGET) || { echo 'Test execution failed'; exit 1; }

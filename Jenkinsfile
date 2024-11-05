@@ -1,31 +1,38 @@
 pipeline {
     agent any
-    // environment {
-    //     RASPI_USER = 'pi'
-    //     RASPI_HOST = 'raspberrypi.local'
-    // }
+    environment {
+        RASPI_USER = 'pi'
+        RASPI_HOST = 'raspberrypi.local'
+    }
 
     stages {
         stage('Git Checkout') {
             steps {
-                git changelog: false, poll: false, url: 'https://github.com/endrycofr/opengl_c-.git'            }
+                git changelog: false, poll: false, url: 'https://github.com/endrycofr/opengl_c-.git'
+            }
         }
-          stage('Test') {
+        
+        stage('Test') {
             steps {
                 sh 'make test'
             }
         }
-
+        
         stage('Docker build') {
             steps {
-                sh 'make image'
+                sh 'make buildx-image'
             }
-       }
-         stage('Docker push') {
-            scripts {
-                sh 'make push'
+        }
+        
+        stage('Docker push') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: '55f6f145-13b5-4d9c-8ea4-a0f515a2212c', toolName: 'docker') {
+                        sh 'make buildx-push'
+                    }
+                }
             }
-       }
+        }
 
         stage('Deploy to Raspberry Pi') {
             steps {
