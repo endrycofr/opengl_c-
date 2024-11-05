@@ -54,14 +54,14 @@ clean:
 # Setup buildx builder with multi-platform support
 buildx-setup:
 	@echo "🔧 Setting up Docker Buildx builder..."
-	docker buildx create --name multiarch-builder --driver docker-container --bootstrap || true
-	docker buildx use multiarch-builder
-	docker buildx inspect --bootstrap
+	sudo docker buildx create --name multiarch-builder --driver docker-container --bootstrap || true
+	sudo docker buildx use multiarch-builder
+	sudo docker buildx inspect --bootstrap
 
 # Multi-platform build and push using buildx
 buildx-push: buildx-setup
 	@echo "🚀 Building and pushing multi-arch images for platforms: $(PLATFORMS)"
-	docker buildx build \
+	sudo docker buildx build \
 		--platform $(PLATFORMS) \
 		-t $(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG) \
 		--push \
@@ -71,7 +71,7 @@ buildx-push: buildx-setup
 # Build multi-arch images locally without pushing
 buildx-image: buildx-setup
 	@echo "🔨 Building multi-arch images locally for platforms: $(PLATFORMS)"
-	docker buildx build \
+	sudo docker buildx build \
 		--platform $(PLATFORMS) \
 		-t $(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG) \
 		--load \
