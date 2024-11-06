@@ -49,7 +49,8 @@ clean:
 # Setup buildx builder with multi-platform support
 buildx-setup:
 	@echo "🔧 Setting up Docker Buildx builder..."
-	docker buildx create --name multiarch-builder --driver docker-container --bootstrap || true
+	docker buildx rm multiarch-builder || true
+	docker buildx create --name multiarch-builder --driver docker-container --bootstrap
 	docker buildx use multiarch-builder
 	docker buildx inspect --bootstrap
 
@@ -62,6 +63,7 @@ buildx-push: buildx-setup
 		--push \
 		. || { echo '❌ Buildx build and push failed'; exit 1; }
 	@echo "✅ Successfully built and pushed images for AMD64 and ARM64"
+
 
 # Build multi-arch images locally without pushing
 buildx-image: buildx-setup
