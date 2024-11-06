@@ -1,6 +1,5 @@
-# Used by `image`, `push` & `deploy` targets, override as required
 IMAGE_REG ?= docker.io
-IMAGE_REPO ?= endrycofr/cpp_opengl
+IMAGE_REPO ?= endrycofr/cpp_opengl  # Pastikan username sesuai dengan akun Docker Hub Anda
 IMAGE_TAG ?= latest
 
 # Compiler
@@ -61,7 +60,7 @@ buildx-setup:
 # Multi-platform build and push using buildx
 buildx-push: buildx-setup
 	@echo "🚀 Building and pushing multi-arch images for platforms: $(PLATFORMS)"
-	sudo docker buildx build \
+	docker buildx build \
 		--platform $(PLATFORMS) \
 		-t $(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG) \
 		--push \
@@ -71,7 +70,7 @@ buildx-push: buildx-setup
 # Build multi-arch images locally without pushing
 buildx-image: buildx-setup
 	@echo "🔨 Building multi-arch images locally for platforms: $(PLATFORMS)"
-	sudo docker buildx build \
+	docker buildx build \
 		--platform $(PLATFORMS) \
 		-t $(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG) \
 		--load \
