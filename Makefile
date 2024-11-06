@@ -1,52 +1,44 @@
+# Image registry details
 IMAGE_REG ?= docker.io
-IMAGE_REPO ?= endrycofr/cpp_opengl  # Pastikan username sesuai dengan akun Docker Hub Anda
+IMAGE_REPO ?= endrycofr/cpp_opengl
 IMAGE_TAG ?= latest
 
-# Compiler
+# Compiler settings
 CXX = g++
 
-# Check the operating system
+# Detect operating system and set compiler flags accordingly
 UNAME_S := $(shell uname -s)
 
-# Compiler flags for different operating systems
 ifeq ($(UNAME_S),Linux)
     CXXFLAGS = -I/usr/include -L/usr/lib -lGL -lGLU -lglut -lGLEW
-  
-else ifeq ($(UNAME_S),Darwin) # macOS is treated like Unix
+else ifeq ($(UNAME_S),Darwin) # macOS settings
     CXXFLAGS = -I/usr/local/include -lGL -lGLU -lglut -lGLEW
-
-else # Windows
+else # Windows settings
     CXXFLAGS = -I/mingw64/include -L/mingw64/lib -lopengl32 -lfreeglut -lglu32 -lglew32 -lglfw3 -lgdi32 -lwinmm
-
 endif
 
-# Source files
+# Source and output files
 SRCS = main.cpp
-
-
-# Output binaries
 TARGET = main
 
-
-# Explicitly define supported platforms
+# Platforms for multi-arch build
 PLATFORMS = linux/amd64,linux/arm64
 
-# Phony targets
-.PHONY: all clean image push buildx-image buildx-push buildx-setup test
+# Phony targets to avoid filename conflicts
+.PHONY: all clean buildx-setup buildx-push buildx-image test
 
-# Default target to build both main and test applications
-all: $(TARGET) 
+# Default target to build the application
+all: $(TARGET)
 
 # Build the main application
 $(TARGET): $(SRCS)
 	$(CXX) -o $(TARGET) $(SRCS) $(CXXFLAGS) || { echo 'Build failed for $(TARGET)'; exit 1; }
 
-
-# Clean target to remove compiled files
+# Clean up generated binaries
 clean:
-	rm -f $(TARGET) 
+	rm -f $(TARGET)
 
-# Setup buildx builder with multi-platform support
+# Setup Docker Buildx for multi-platform builds
 buildx-setup:
 	@echo "🔧 Setting up Docker Buildx builder..."
 	docker buildx rm multiarch-builder || true
@@ -54,8 +46,7 @@ buildx-setup:
 	docker buildx use multiarch-builder
 	docker buildx inspect --bootstrap
 
-
-# Multi-platform build and push using buildx
+# Multi-platform build and push using Buildx
 buildx-push: buildx-setup
 	@echo "🚀 Building and pushing multi-arch images for platforms: $(PLATFORMS)"
 	docker buildx build \
@@ -65,10 +56,7 @@ buildx-push: buildx-setup
 		. || { echo '❌ Buildx build and push failed'; exit 1; }
 	@echo "✅ Successfully built and pushed images for AMD64 and ARM64"
 
-
-
-
-# Build multi-arch images locally without pushing
+# Multi-arch build without pushing (for local testing)
 buildx-image: buildx-setup
 	@echo "🔨 Building multi-arch images locally for platforms: $(PLATFORMS)"
 	docker buildx build \
@@ -78,7 +66,8 @@ buildx-image: buildx-setup
 		. || { echo '❌ Buildx build failed'; exit 1; }
 	@echo "✅ Successfully built images for AMD64 and ARM64"
 
-test: $(TEST_TARGET)
+# Run tests (assuming test target exists)
+test: $(TARGET)
 	@echo "Running tests..."
-	chmod +x $(TEST_TARGET)
-	./$(TEST_TARGET) || { echo 'Test execution failed'; exit 1; }
+	chmod +x $(TARGET)
+	./$(TARGET) || { echo 'Test execution failed'; exit 1; }
