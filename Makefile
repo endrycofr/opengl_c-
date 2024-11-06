@@ -56,7 +56,7 @@ buildx-setup:
 
 
 # Multi-platform build and push using buildx
-buildx-push: buildx-setup
+buildx-push: 
 	@echo "🚀 Building and pushing multi-arch images for platforms: $(PLATFORMS)"
 	docker buildx build \
 		--platform $(PLATFORMS) \
