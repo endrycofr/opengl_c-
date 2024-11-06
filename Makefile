@@ -60,7 +60,7 @@ buildx-setup:
 # Multi-platform build and push using buildx
 buildx-push: buildx-setup
 	@echo "🚀 Building and pushing multi-arch images for platforms: $(PLATFORMS)"
-	docker buildx build \
+	sudo -E docker buildx build \
 		--platform $(PLATFORMS) \
 		-t $(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG) \
 		--push \
