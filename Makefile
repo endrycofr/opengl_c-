@@ -54,6 +54,7 @@ buildx-setup:
 	docker buildx use multiarch-builder
 	docker buildx inspect --bootstrap
 
+
 # Multi-platform build and push using buildx
 buildx-push: buildx-setup
 	@echo "🚀 Building and pushing multi-arch images for platforms: $(PLATFORMS)"
@@ -63,6 +64,7 @@ buildx-push: buildx-setup
 		--push \
 		. || { echo '❌ Buildx build and push failed'; exit 1; }
 	@echo "✅ Successfully built and pushed images for AMD64 and ARM64"
+
 
 
 # Build multi-arch images locally without pushing
