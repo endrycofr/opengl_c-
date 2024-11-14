@@ -41,10 +41,10 @@ clean:
 # Setup Docker Buildx for multi-platform builds
 buildx-setup:
 	@echo "🔧 Setting up Docker Buildx builder..."
-    docker buildx rm multiarch-builder || true
-    docker buildx create --name multiarch-builder --driver docker-container --bootstrap
-    docker buildx use multiarch-builder
-    docker buildx inspect --bootstrap
+	docker buildx rm multiarch-builder || true
+	docker buildx create --name multiarch-builder --driver docker-container --bootstrap
+	docker buildx use multiarch-builder
+	docker buildx inspect --bootstrap
 
 # Multi-platform build and push using Buildx
 buildx-push: 
