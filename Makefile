@@ -38,12 +38,23 @@ $(TARGET): $(SRCS)
 clean:
 	rm -f $(TARGET)
 
+
+# Check Docker permissions
+docker-check:
+	@if ! docker info >/dev/null 2>&1; then \
+		echo "❌ Docker is not running or you don't have sufficient permissions."; \
+		echo "👉 Try running these commands:"; \
+		echo "   sudo usermod -aG docker $$USER"; \	
+		echo "   sudo chmod 666 /var/run/docker.sock"; \
+		echo "   newgrp docker"; \
+		echo "   sudo systemctl start docker"; \
+		exit 1; \
+	fi
+
+
 # Setup Docker Buildx for multi-platform builds
 buildx-setup:
 	@echo "🔧 Setting up Docker Buildx builder..."
-	sudo usermod -aG docker $USER
-	newgrp docker
-	sudo chmod 666 /var/run/docker.sock
 	docker run --rm --privileged tonistiigi/binfmt --install all || true
 	docker buildx rm multiarch-builder || true
 	docker buildx create --name multiarch-builder --driver docker-container --bootstrap
