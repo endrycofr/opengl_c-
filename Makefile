@@ -53,8 +53,12 @@ docker-check:
 
 
 # Setup Docker Buildx for multi-platform builds
-buildx-setup:
+buildx-setup:docker-check
 	@echo "🔧 Setting up Docker Buildx builder..."
+		@if ! docker buildx version >/dev/null 2>&1; then \
+		echo "❌ Docker Buildx not available. Please ensure Docker version >= 19.03"; \
+		exit 1; \
+	fi
 	docker run --rm --privileged tonistiigi/binfmt --install all || true
 	docker buildx rm multiarch-builder || true
 	docker buildx create --name multiarch-builder --driver docker-container --bootstrap
